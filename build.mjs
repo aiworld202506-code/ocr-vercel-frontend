@@ -3,7 +3,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const frontendDir = dirname(fileURLToPath(import.meta.url));
-const sourceDir = resolve(frontendDir, "../ocr_app/static");
+const sourceDir = resolve(frontendDir, "src");
 const outputDir = resolve(frontendDir, "dist");
 const configuredApiUrl = process.env.OCR_API_BASE_URL || "";
 let apiBaseUrl = "";
