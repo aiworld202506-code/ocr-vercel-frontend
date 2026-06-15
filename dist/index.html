@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <meta name="api-base-url" content="https://api.xyzcool.xyz">
+  <title>文档图像识别</title>
+  <link rel="stylesheet" href="/static/styles.css?v=20260615-3">
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <h1>文档图像识别</h1>
+      <p class="lede">上传表格或文档照片，提取印刷文字、手写文字和勾选项。</p>
+      <div id="health" class="health">正在检查识别服务...</div>
+    </header>
+
+    <section class="workspace">
+      <form id="upload-form" class="panel">
+        <label id="drop-zone" class="drop-zone" for="image-input">
+          <input id="image-input" name="image" type="file" accept="image/jpeg,image/png,image/webp" required>
+          <span class="drop-title">点击选择或拖入图片</span>
+          <span class="drop-hint">JPEG、PNG、WebP，最大 15 MB</span>
+          <img id="preview" alt="待识别图片预览">
+        </label>
+
+        <label class="field">
+          <span>补充要求（可选）</span>
+          <textarea id="instruction" rows="3" placeholder="例如：重点识别 Health & Safety checklist 中勾选的选项"></textarea>
+        </label>
+
+        <label class="field">
+          <span>访问密钥（仅在服务器配置后需要）</span>
+          <input id="api-key" type="password" autocomplete="off" placeholder="X-API-Key">
+        </label>
+
+        <button id="submit-button" type="submit">开始识别</button>
+        <p id="error" class="error" role="alert"></p>
+      </form>
+
+      <section id="output-section" class="panel result-panel" aria-live="polite">
+        <div class="result-heading">
+          <h2>识别结果</h2>
+        </div>
+        <div id="empty-result" class="empty-result">识别结果将在这里显示。</div>
+        <div id="result" hidden>
+          <p id="summary" class="summary"></p>
+          <div id="document-output" class="document-output"></div>
+          <details class="json-details">
+            <summary>原始 JSON（额外信息）</summary>
+            <button id="copy-button" class="secondary" type="button" disabled>复制 JSON</button>
+            <pre id="json-output"></pre>
+          </details>
+        </div>
+      </section>
+    </section>
+  </main>
+  <script src="/static/app-v3.js" defer></script>
+</body>
+</html>
