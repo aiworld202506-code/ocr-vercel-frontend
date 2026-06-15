@@ -64,6 +64,8 @@ ul { padding-left: 22px; }
 .ocr-line-number { padding: 8px 8px 8px 0; color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
 .ocr-line-text { min-width: 0; padding: 8px 10px; border-left: 1px solid var(--line); white-space: pre-wrap; overflow-wrap: anywhere; }
 .line-handwritten, .line-mixed { border-left-color: #b86b38; background: #fff5e9; }
+.selection-list-heading { margin: 22px 0 8px; color: var(--ink); text-transform: none; letter-spacing: 0; }
+.selection-list { display: grid; gap: 5px; padding: 8px; border: 1px solid var(--line); border-radius: 10px; background: #fafaf6; }
 .document-block { min-height: 30px; padding: 6px 10px; border-left: 3px solid transparent; white-space: pre-wrap; }
 .block-heading { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 1.12rem; font-weight: 800; }
 .block-handwritten { border-left-color: #b86b38; background: #fff5e9; font-family: "Segoe Print", "Comic Sans MS", cursive; }
