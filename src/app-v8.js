@@ -11,9 +11,11 @@ const outputSection = document.querySelector("#output-section");
 const documentOutput = document.querySelector("#document-output");
 const jsonOutput = document.querySelector("#json-output");
 const summaryOutput = document.querySelector("#summary");
+const recognitionMeta = document.querySelector("#recognition-meta");
 const apiBaseUrl = (
   document.querySelector('meta[name="api-base-url"]')?.content || ""
 ).replace(/\/+$/, "");
+const LAST_RESULT_STORAGE_KEY = "ocr-last-recognition-v1";
 let lastOutput = "";
 
 function apiUrl(path) {
@@ -111,7 +113,47 @@ dropZone.addEventListener("drop", (event) => {
   showPreview(file);
 });
 
-function render(data) {
+function formatElapsed(milliseconds) {
+  const totalSeconds = Math.max(0, Math.round(milliseconds / 1000));
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return minutes ? `${minutes} 分 ${seconds} 秒` : `${seconds} 秒`;
+}
+
+function saveLastResult(data, elapsedMs) {
+  try {
+    localStorage.setItem(LAST_RESULT_STORAGE_KEY, JSON.stringify({
+      data,
+      elapsed_ms: elapsedMs,
+      completed_at: new Date().toISOString(),
+    }));
+  } catch {
+    // Recognition still works when browser storage is unavailable or full.
+  }
+}
+
+function restoreLastResult() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(LAST_RESULT_STORAGE_KEY));
+    if (!saved?.data) return;
+    render(saved.data, {
+      elapsedMs: Number(saved.elapsed_ms) || 0,
+      completedAt: saved.completed_at,
+      persist: false,
+      scroll: false,
+    });
+  } catch {
+    localStorage.removeItem(LAST_RESULT_STORAGE_KEY);
+  }
+}
+
+function render(data, options = {}) {
+  const {
+    elapsedMs = 0,
+    completedAt = new Date().toISOString(),
+    persist = true,
+    scroll = true,
+  } = options;
   const parsed = data.result;
   const displayValue = parsed || { raw_text: data.raw_text };
   lastOutput = JSON.stringify(displayValue, null, 2);
@@ -119,12 +161,20 @@ function render(data) {
   if (summaryOutput) {
     summaryOutput.textContent = parsed?.summary || "识别内容如下。";
   }
+  if (recognitionMeta) {
+    const completed = new Date(completedAt);
+    const completedText = Number.isNaN(completed.getTime())
+      ? ""
+      : ` · 完成于 ${completed.toLocaleString()}`;
+    recognitionMeta.textContent = `总耗时：${formatElapsed(elapsedMs)}${completedText}`;
+  }
   renderDocument(parsed, data.raw_text);
 
   emptyResult.hidden = true;
   resultBox.hidden = false;
   copyButton.disabled = false;
-  scrollToOutput();
+  if (persist) saveLastResult(data, elapsedMs);
+  if (scroll) scrollToOutput();
 }
 
 function makeBlock(type, text, label = "", value = "", state = null) {
@@ -435,6 +485,7 @@ form.addEventListener("submit", async (event) => {
 
   submitButton.disabled = true;
   submitButton.textContent = "正在识别...";
+  const startedAt = performance.now();
   emptyResult.hidden = false;
   emptyResult.textContent = "正在识别，请稍候...";
   resultBox.hidden = true;
@@ -455,7 +506,7 @@ form.addEventListener("submit", async (event) => {
     if (!response.ok) throw new Error(data.detail || `请求失败 (${response.status})`);
     if (!data.job_id) throw new Error("服务器未返回任务编号。");
     const recognition = await waitForRecognition(data.job_id, requestHeaders);
-    render(recognition);
+    render(recognition, { elapsedMs: performance.now() - startedAt });
   } catch (error) {
     errorBox.textContent = error instanceof TypeError
       ? "无法连接识别服务，请检查网络后重试。"
@@ -490,4 +541,5 @@ async function checkHealth() {
   }
 }
 
+restoreLastResult();
 checkHealth();
